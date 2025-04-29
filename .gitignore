@@ -1,0 +1,7 @@
+# data dir
+
+data/raw/nyra_2019_complete.csv
+data/raw/nyra_2019_complete.parquet
+data/raw/nyra_race_table.csv
+data/raw/nyra_tracking_table.csv
+data/raw/nyra_start_table.csv
