@@ -5,7 +5,7 @@
 ## Data Sources
 
 Main dataset [https://www.kaggle.com/competitions/big-data-derby-2022/overview](Link):
-
+- `nyra_2019_complete.parquet`
 - 2.000 races
 - 3 racing tracks in the US (AQU = Aqueduct, BEL = Belmont , SAR = Saratoga)
 - Different race track conditions (e.g., muddy, soft) or race types (e.g., Stakes, Handicap)
@@ -13,7 +13,7 @@ Main dataset [https://www.kaggle.com/competitions/big-data-derby-2022/overview](
 
 Supplemenatry datasets [https://www.kaggle.com/datasets/themarkgreen/big-data-derby-2022-global-horse-ids-and-places](Link):
 - `horse_names.csv`: Unique identifiers of horses to uniquely identify horses across races
-- `horse_name`: Name of the horses (optional)
+- `horse_name.csv`: Name of the horses (optional)
 
 ## Research Focus
 
