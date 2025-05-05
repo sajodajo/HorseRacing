@@ -26,6 +26,7 @@
 | `race_type`          | Classification of the race. (e.g., STK - Stakes, CLM - Claiming, MSW - Maiden Special Weight, etc.) |
 | `post_time`          | Time the race began, in HHMM format (e.g., 01220 = 12:20). |
 | `weight_carried`     | Weight carried by the horse (in pounds). |
+| `purse`              | Purse in US dollars of the race passed as an money with two decimal places. |
 | `jockey`             | Name of the jockey (up to 50 characters). |
 | `odds`               | Odds to win multiplied by 100 (e.g., 1280 = 12.8-1). |
 | `position_at_finish` | Finishing position of the horse in the race (integer). |
