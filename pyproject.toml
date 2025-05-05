@@ -14,8 +14,9 @@ dependencies = [
     "pandas>=2.2.3",
     "plotly>=6.0.1",
     "polars>=1.28.1",
-    "scikit-learn>=1.6.1",
+    "pyarrow>=20.0.0",
     "seaborn>=0.13.2",
     "statsmodels>=0.14.4",
+    "streamlit>=1.45.0",
     "tqdm>=4.67.1",
 ]
