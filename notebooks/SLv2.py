@@ -4,17 +4,21 @@ import plotly.express as px
 import horseFunctions as hf
 import numpy as np
 from datetime import date
+import os
+import pandas as pd
 
 
 # Title
 st.title("Horse Racing Data Explorer")
 
-main_file_path = r"../data/raw/nyra_2019_complete.parquet"
-horse_global_ids = r"../data/raw/horse_ids.csv"
-horse_names = r"../data/raw/horse_names.csv"
+main_file_path = r"/data/raw/nyra_2019_complete.parquet"
+horse_global_ids = r"/data/raw/horse_ids.csv"
+horse_names = r"/data/raw/horse_names.csv"
 
 
-df = hf.loadDataPolars(main_file_path, horse_global_ids, horse_names)
+lf = hf.loadDataPolars(main_file_path, horse_global_ids, horse_names)
+
+df = pl.read_parquet("data/raw/nyra_2019_complete.parquet")
 
 selected_track = st.selectbox(
     "Select Track ID",

@@ -3,7 +3,6 @@ import numpy as np
 import streamlit as st
 import polars as pl
 
-@st.cache_data
 def loadData(main_file_path,horse_global_ids,horse_names):
     df = pd.read_parquet(main_file_path)
 
@@ -42,7 +41,6 @@ def loadData(main_file_path,horse_global_ids,horse_names):
 
 def loadDataPolars(main_file_path, horse_global_ids, horse_names):
     df = pl.read_parquet(main_file_path)
-
     df_horse_ids = pl.read_csv(horse_global_ids)
     df_horse_names = pl.read_csv(horse_names)
 
