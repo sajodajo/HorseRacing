@@ -16,9 +16,14 @@ horse_global_ids = r"/data/raw/horse_ids.csv"
 horse_names = r"/data/raw/horse_names.csv"
 
 
-lf = hf.loadDataPolars(main_file_path, horse_global_ids, horse_names)
+BASE_DIR = os.path.dirname(__file__)  # Path to this script
 
-df = pl.read_parquet("data/raw/nyra_2019_complete.parquet")
+main_file_path = os.path.abspath(os.path.join(BASE_DIR, "../data/raw/nyra_2019_complete.parquet"))
+horse_global_ids = os.path.abspath(os.path.join(BASE_DIR, "../data/raw/horse_ids.csv"))
+horse_names = os.path.abspath(os.path.join(BASE_DIR, "../data/raw/horse_names.csv"))
+
+
+df = hf.loadData(main_file_path, horse_global_ids, horse_names)
 
 selected_track = st.selectbox(
     "Select Track ID",
@@ -47,6 +52,9 @@ selected_horse = st.selectbox(
 )
 
 final_selection = df_race.filter(pl.col("horse_name") == selected_horse)
+
+
+## Display the selected horse's data
 
 st.write("Filtered Result:")
 final_df_pd = final_selection.to_pandas()
