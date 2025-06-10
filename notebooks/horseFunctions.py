@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import polars as pl
+import plotly.express as px
 
 def loadData(main_file_path,horse_global_ids,horse_names):
     df = pd.read_parquet(main_file_path)
@@ -97,3 +98,31 @@ def loadDataPolars(main_file_path, horse_global_ids, horse_names):
     df = df.join(df_horse_names.select(["horse_id", "horse_name"]), on="horse_id", how="left")
 
     return df
+
+
+def getRunData(df, chosenRun):
+    chosenDF = df[(df['horse_pk']==chosenRun)]
+    return chosenDF
+
+
+def vizRunData(df, chosenRun):
+    fig = px.scatter(
+    getRunData(df, chosenRun),
+    x='longitude',
+    y='latitude',
+    color='speed_kmh',
+    color_continuous_scale='hot',
+    hover_data=['speed_kmh', 'pctComplete'],  
+    title='Horse Path During Race (Colored by Speed)',
+    labels={'speed_kmh': 'Speed (km/h)', 'pctComplete':'Completion' ,'longitude': 'Longitude', 'latitude': 'Latitude'},
+)
+
+    fig.update_traces(marker=dict(size=8, line=dict(width=0)))  
+    fig.update_layout(
+        xaxis_title="Longitude",
+        yaxis_title="Latitude",
+        coloraxis_colorbar=dict(title="Speed"),
+        template="simple_white"
+    )
+
+    return fig
