@@ -1,5 +1,12 @@
 # HorseRacing Big Data Derby 2022 Competition 
 
+**Race Strategy Profiling and Performance Feature Engineering**
+
+### Features
+
+- Database explorer 
+- Race preparation and competitior analysis
+- Race strategy 
 
 
 ## Data Sources
@@ -37,26 +44,27 @@
 - `horse_ids.csv`: Unique identifiers of horses to uniquely identify horses across races
 - `horse_names.csv`: Name of the horses (optional)
 
-## Research Focus
 
-(tbd)
-
-## Repo
+## Repo Setup
 
 High-level structure of the repository:
+
 
 ```
 .
 └── HorseRacing
-    ├── data
-    │   ├── raw                             # raw data files from Kaggle
-    │   └── processed                       # cleaned and preprocess files for training
-    ├── notebooks                           # EDA and reporting
-    ├── src
-    │   ├── ingestion_pipeline              # from raw to processed data files
-    │   │   └── main.py                     # Scripts for pipeline
-    │   └── models                          # Trained model files
-    └── pyproject.toml                      # managing dependencies
+    ├── data    
+    │   ├── raw
+    │   └── processed                           # data for streamlit app
+    ├── notebooks                               # EDA
+    └── src                                     # main app folder
+        ├── assets                              # images, icons etc.
+        ├── ingestion                           # preprocessing logic raw -> processed data
+        │   └── preprocessing_pipeline.py
+        ├── ui                                  # streamlit frontend
+        │   ├── pages                           # sub-pages
+        │   └── Home.py                         # entry/main page
+        └── utils
 ```
 
 
@@ -111,10 +119,10 @@ uv add <library-name>
 uv remove <library-name>
 ```
 
-To run scripts:
+To run the Streamlit app, run the following command from the root:
 
 ```bash
-uv run <script-name>.py
+uv run streamlit run src/ui/Home.py
 ```
 
 
