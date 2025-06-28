@@ -5,6 +5,16 @@ import pathlib
 from dotenv import load_dotenv
 import sys
 
+st.set_page_config(page_title="Home", layout="wide")
+
+# Add project root to Python path
+project_root = pathlib.Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from src.utils.track_statistics import calculate_track_summary_stats_landingpage
+
+
+
 # Custom CSS for clean white theme and style guide
 st.markdown('''
     <style>
@@ -77,28 +87,6 @@ st.markdown('''
     </style>
 ''', unsafe_allow_html=True)
 
-# Add project root to Python path
-project_root = pathlib.Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
-
-from src.utils.track_statistics import calculate_track_summary_stats_landingpage
-
-load_dotenv()
-
-st.set_page_config(page_title="Home", layout="wide")
-
-# Single clean header with quick stats (dummy values)
-st.markdown(f"""
-<div style='display: flex; align-items: center; justify-content: space-between;'>
-    <div style='display: flex; align-items: center;'>
-        <h1 style='margin-bottom: 0;'>Home</h1>
-    </div>
-    <div style='text-align: right;'>
-        <span style='font-size: 1.2rem; color: #800020;'>🏇 Saratoga | 12 Races | 8 Jockeys | 120 Horses</span>
-    </div>
-</div>
-<hr style='border: 1px solid #D4AF37; margin-bottom: 2rem;'>
-""", unsafe_allow_html=True)
 
 # Sidebar filters with gold icons and titles
 with st.sidebar:
@@ -119,12 +107,7 @@ with st.sidebar:
 st.markdown("## Welcome to the Home Page")
 st.info("This page will provide an overview of key metrics and visualizations.")
 
-# Footer
-st.markdown("""
-<div class='footer'>
-    Contact | Terms | Analytics Disclosure | Data Source: NYRA
-</div>
-""", unsafe_allow_html=True)
+
 
 @st.cache_data
 def load_preprocessed_df():

@@ -106,9 +106,3 @@ with st.sidebar:
 st.markdown("## Explore Race Tracks")
 st.info("This page will provide information and statistics about different tracks.")
 
-# Footer
-st.markdown("""
-<div class='footer'>
-    Contact | Terms | Analytics Disclosure | Data Source: NYRA
-</div>
-""", unsafe_allow_html=True) 

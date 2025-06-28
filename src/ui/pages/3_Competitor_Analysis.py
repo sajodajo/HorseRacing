@@ -75,7 +75,7 @@ st.markdown('''
 ''', unsafe_allow_html=True)
 
 # Single clean header with quick stats (dummy values)
-st.markdown(f"""
+st.markdown("""
 <div style='display: flex; align-items: center; justify-content: space-between;'>
     <div style='display: flex; align-items: center;'>
         <h1 style='margin-bottom: 0;'>Competitor Analysis</h1>
@@ -115,9 +115,3 @@ for i in range(st.session_state['num_cards']):
 
 st.button("Add Competitor", on_click=add_card)
 
-# Footer
-st.markdown("""
-<div class='footer'>
-    Contact | Terms | Analytics Disclosure | Data Source: NYRA
-</div>
-""", unsafe_allow_html=True) 
