@@ -4,6 +4,7 @@ import streamlit as st
 import polars as pl
 import os
 from datetime import datetime, timedelta
+import sqlite3
 
 ##########################################
 # Preprocessing pipeline for ingestion
@@ -224,6 +225,32 @@ def store_processed_df(df):
 
     df.write_parquet(processed_file_name)
 
+def parquet_to_sqlite(df, db_path):
+    """
+    Store polars cleaned and processed dataframe as sqlite file in subdirectory. If already exists overwrite last file.
+    """
+
+    # if processed dir does not exist generate
+    if not os.path.exists(processed_data_dir):
+        os.makedirs(processed_data_dir)
+
+    # connect to sqlite db
+    conn = sqlite3.connect(db_path)
+    
+    try:
+        # convert polars to pandas for sqlite compatibility
+        df_pandas = df.to_pandas()
+        
+        # write to sqlite table
+        df_pandas.to_sql('horse_racing_data', conn, if_exists='replace', index=False)
+        
+        print(f"Successfully saved {len(df_pandas)} rows to SQLite database at {db_path}")
+        
+    except Exception as e:
+        print(f"Error saving to SQLite: {e}")
+    finally:
+        conn.close()
+
 
 # TEST
 
@@ -234,5 +261,9 @@ if __name__ == "__main__":
     # feature test
     # print(df.select(["horse_pk", "trakus_index", "race_progress"]).head())
 
-
+    # save as parquet
     store_processed_df(df)
+    
+    # save as sqlite database for LLM agents
+    sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
+    parquet_to_sqlite(df, sqlite_db_path)
