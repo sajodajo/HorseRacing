@@ -399,9 +399,10 @@ def load_data(main_file_path, horse_global_ids, horse_names):
         .over(["rid", "trakus_index"])
         .alias("position_rank")
     ])
+
     print(
         df.filter(pl.col("rid") == "AQU_2019-01-01_1")
-        .select(["trakus_index", "horse_pk", "distance_id_m", "cumulative_distance_m", "cum_race_distance_m"])
+        .select(["trakus_index", "horse_pk", "distance_id_m", "cumulative_distance_m", "position_rank", "cum_race_distance_m"])
         .sort(["trakus_index", "position_rank"])
     )
     print("Sample ranking at different time points:")
