@@ -1,11 +1,12 @@
 import os
+import sys
+import pathlib 
 from dotenv import load_dotenv
 
 import streamlit as st
 
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from langchain_core.messages import HumanMessage
 from langchain.agents import ConversationalChatAgent, AgentExecutor
 from langchain_openai import ChatOpenAI
 
@@ -16,10 +17,18 @@ from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
 from langchain_core.runnables import RunnableConfig
 from langchain.memory import ConversationBufferMemory
 
+# Add project root to Python path
+project_root = pathlib.Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from src.utils.prompt_template import AGENT_SYSTEM_MESSAGE
+from src.utils.plotting_tool import plotly_graph_tool
+
 st.set_page_config(
     page_title="Chat with your Data", 
-    page_icon=":horse_racing:")
-st.title("Chat with your Data")
+    page_icon=":horse_racing:",
+    layout="wide")
+st.title("Chat with your AI Horse Racing Analyst :robot_face:")
 
 # Hide the streamlit upper-right chrome
 st.html(
@@ -33,6 +42,12 @@ st.html(
     </style>
     """,
 )
+
+with st.sidebar.expander("💡 Suggested Questions"):
+    st.markdown("- *Show the average winning speed by track condition*")
+    st.markdown("- *Which jockey has the most wins in muddy conditions?*")
+    st.markdown("- *Generate a bar chart showing the number of races per track using Plotly.*")
+    st.markdown("- *Compare average speed by course type (dirt vs turf)*")
 
 msgs = StreamlitChatMessageHistory()
 memory = ConversationBufferMemory(
@@ -60,16 +75,19 @@ def initialize_agent():
         # Create database connection
         db = SQLDatabase.from_uri(f"sqlite:///{SQLITE_DB_PATH}")
         
-        st.success(f"✅ Connected to SQLite database.")
+        st.success(f"✅ Connected to horse racing database.")
 
         # Create SQL toolkit
         toolkit = SQLDatabaseToolkit(db=db, llm=llm)
         tools = toolkit.get_tools()
 
+        # Add the Plotly graph tool
+        tools.append(plotly_graph_tool)
+
         chat_agent = ConversationalChatAgent.from_llm_and_tools(
             llm=llm,
             tools=tools,
-            system_message="""You are a Horse Racing Data Analysis Expert."""
+            system_message=AGENT_SYSTEM_MESSAGE,
         )
 
         agent = AgentExecutor.from_agent_and_tools(

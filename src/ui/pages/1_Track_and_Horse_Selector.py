@@ -6,6 +6,7 @@ import plotly.express as px
 
 st.set_page_config(
     page_title="Track and Race Selector",
+    layout="wide",
 )
 
 st.markdown("# Track and Race Selector")

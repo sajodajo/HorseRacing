@@ -1,8 +1,6 @@
-import os
 import streamlit as st
 import polars as pl
 import pathlib
-from dotenv import load_dotenv
 import sys
 
 st.set_page_config(page_title="Home", layout="wide")
@@ -14,78 +12,78 @@ sys.path.insert(0, str(project_root))
 from src.utils.track_statistics import calculate_track_summary_stats_landingpage
 
 
+# Load the logo
+logo_path = "src/assets/ie_logo.png"
+st.logo(
+    logo_path,
+    size="large",
+)
 
-# Custom CSS for clean white theme and style guide
-st.markdown('''
+
+# Hide the streamlit upper-right chrome
+st.html(
+    """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@400;700&display=swap');
-    html, body, [class*="css"]  {
-        background-color: #F9F7F1;
-        color: #014421;
-        font-family: 'Lato', sans-serif;
+    [data-testid="stStatusWidget"] {
+            visibility: hidden;
+            height: 0%;
+            position: fixed;
+        }
+    </style>
+    """,
+)
+
+# Inject custom CSS for styling
+st.markdown(
+    """
+    <style>
+    /* Set primary colors */
+    :root {
+        --primary-green: #75C200;
+        --primary-blue: #000066;
+        --accent-blue: #47BFFF;
     }
-    h1, h2, h3, h4, h5, h6 {
-        font-family: 'Playfair Display', serif;
-        color: #014421;
-        border-bottom: 2px solid #D4AF37;
-        padding-bottom: 0.2em;
-        margin-bottom: 0.5em;
+
+    /* General body styling */
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: var(--primary-blue);
+        color: white;
     }
-    .main .block-container {
-        padding-top: 2rem;
+
+    /* Style links without underlining */
+    a {
+        color: var(--accent-blue);
+        text-decoration: none;
     }
+    a:hover {
+        color: var(--primary-green);
+        text-decoration: underline;
+    }
+
+    /* Style headers */
+    h1, h2, h3 {
+        color: var(--primary-green);
+    }
+
+    /* Style buttons */
     .stButton>button {
-        background-color: #D4AF37;
-        color: #014421;
-        border-radius: 6px;
-        font-weight: bold;
+        background-color: var(--primary-green);
+        color: white;
         border: none;
-        padding: 0.5rem 1.5rem;
-        margin: 0.5rem 0;
-        font-family: 'Lato', sans-serif;
+        border-radius: 5px;
+        padding: 10px 20px;
     }
     .stButton>button:hover {
-        background-color: #014421;
-        color: #D4AF37;
-    }
-    .card {
-        background: #fff;
-        border: 2px solid #8B4513;
-        border-radius: 10px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 24px rgba(1,68,33,0.08);
-        color: #014421;
-        font-family: 'Lato', sans-serif;
-    }
-    .footer {
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background: #F9F7F1;
-        color: #8B4513;
-        text-align: center;
-        padding: 0.5rem 0;
-        font-size: 0.9rem;
-        z-index: 100;
-        border-top: 2px solid #D4AF37;
-    }
-    .sidebar-title {
-        color: #D4AF37;
-        font-family: 'Playfair Display', serif;
-        font-size: 1.3em;
-        margin-bottom: 0.5em;
-        display: flex;
-        align-items: center;
-        gap: 0.5em;
-    }
-    .gold-icon {
-        color: #D4AF37;
-        font-size: 1.2em;
-        margin-right: 0.3em;
+        background-color: var(--accent-blue);
+        color: black;
     }
     </style>
-''', unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
+st.title("Welcome to the Horse Racing Strategy App")   
+st.caption("MBD - Sports Analytics | Vandad Vafai, Joaquin Miño, Marius Gnoth, Sam Jones, Maine Isasi")
 
 
 # Sidebar filters with gold icons and titles
@@ -103,11 +101,6 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("<span style='color:#D4AF37;'>Use filters to refine your analysis.</span>", unsafe_allow_html=True)
 
-# Main panel content (dummy)
-st.markdown("## Welcome to the Home Page")
-st.info("This page will provide an overview of key metrics and visualizations.")
-
-
 
 @st.cache_data
 def load_preprocessed_df():
@@ -119,7 +112,7 @@ def load_preprocessed_df():
 df = load_preprocessed_df().collect()
 
 # one column per track with some key statistics
-st.markdown("## Available Tracks")
+st.markdown("### Available Tracks")
 
 col1, col2, col3 = st.columns(3, border=True)
 
@@ -147,35 +140,18 @@ sar_stats = get_track_stats(df, "SAR")
 bel_stats = get_track_stats(df, "BEL")
 aqu_stats = get_track_stats(df, "AQU")
 
-with col1:
-    with st.container():
-        st.markdown("### Saratoga Race Course")
-        st.metric("Number of Races", sar_stats["num_races"])
-        st.metric("Race Dates", sar_stats["num_dates"])
-        st.metric("Unique Horses", sar_stats["num_horses"])
-        st.metric("Unique Jockeys", sar_stats["num_jockeys"])
-        # st.markdown("**Race Types & Lengths:**")
-        # st.write(sar_stats["race_types"])
+def display_track_metrics(track_name, stats):
+    st.markdown(f"### {track_name}")
+    st.metric("Number of Races", stats["num_races"])
+    st.metric("Race Dates", stats["num_dates"])
+    st.metric("Unique Horses", stats["num_horses"])
+    st.metric("Unique Jockeys", stats["num_jockeys"])
 
-with col2:
-    with st.container():
-        st.markdown("### Belmont Park")
-        st.metric("Number of Races", bel_stats["num_races"])
-        st.metric("Race Dates", bel_stats["num_dates"])
-        st.metric("Unique Horses", bel_stats["num_horses"])
-        st.metric("Unique Jockeys", bel_stats["num_jockeys"])
-        # st.markdown("**Race Types & Lengths:**")
-        # st.write(bel_stats["race_types"])
+with col1: display_track_metrics("Saratoga Race Course", sar_stats)
+with col2: display_track_metrics("Belmont Park", bel_stats)
+with col3: display_track_metrics("Aqueduct Racetrack", aqu_stats)
 
-with col3:
-    with st.container():
-        st.markdown("### Aqueduct Racetrack")
-        st.metric("Number of Races", aqu_stats["num_races"])
-        st.metric("Race Dates", aqu_stats["num_dates"])
-        st.metric("Unique Horses", aqu_stats["num_horses"])
-        st.metric("Unique Jockeys", aqu_stats["num_jockeys"])
-        # st.markdown("**Race Types & Lengths:**")
-        # st.write(aqu_stats["race_types"])
+
 
 
 

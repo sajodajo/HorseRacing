@@ -75,7 +75,7 @@ st.markdown('''
 ''', unsafe_allow_html=True)
 
 # Single clean header with quick stats (dummy values)
-st.markdown(f"""
+st.markdown("""
 <div style='display: flex; align-items: center; justify-content: space-between;'>
     <div style='display: flex; align-items: center;'>
         <h1 style='margin-bottom: 0;'>Tracks</h1>
