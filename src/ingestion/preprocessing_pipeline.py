@@ -54,14 +54,12 @@ def load_data(main_file_path, horse_global_ids, horse_names):
     })
 
     print(f"Loaded {df.shape[0]} rows and {df.shape[1]} columns")
-
    
    # Scale conversions
     df = df.with_columns([
         ((pl.col("distance_id") / 100) * 201.168).round(2).alias("distance_id_m"),  # convert distance_id (furlongs) to meters
         (pl.col("run_up_distance").cast(pl.Float64) / 3.28084).round(2).alias("run_up_distance_m")  # convert run_up_distance (feet) to meters
     ])
-
 
     ##########################################
     # Filtering
@@ -388,11 +386,7 @@ def load_data(main_file_path, horse_global_ids, horse_names):
     print(f"{df.filter(pl.col("horse_pk") == "AQU_2019-01-01_1_1").select(["horse_pk","trakus_index", "time_seconds", "distance_m", "speed_kmh", "cum_race_distance_m"]).tail(10)}")
 
     print("Compare with original distance_id:")
-    print(
-        df.filter(pl.col("rid") == "AQU_2019-01-01_1")
-        .select(["trakus_index", "horse_pk", "distance_id_m", "cumulative_distance_m", "cum_race_distance_m"])
-        .sort(["trakus_index", "position_rank"])
-    )
+
 
     ##########################################
     # Race Progress per horse per race
@@ -405,7 +399,11 @@ def load_data(main_file_path, horse_global_ids, horse_names):
         .over(["rid", "trakus_index"])
         .alias("position_rank")
     ])
-
+    print(
+        df.filter(pl.col("rid") == "AQU_2019-01-01_1")
+        .select(["trakus_index", "horse_pk", "distance_id_m", "cumulative_distance_m", "cum_race_distance_m"])
+        .sort(["trakus_index", "position_rank"])
+    )
     print("Sample ranking at different time points:")
     sample_race = df.filter(pl.col("rid") == "AQU_2019-01-01_1")
     for time_point in [10, 50, 100]:
@@ -488,5 +486,5 @@ if __name__ == "__main__":
     store_processed_df(df)
     
     # # save as sqlite database for LLM agents
-    # sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
-    # parquet_to_sqlite(df, sqlite_db_path)
+    sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
+    parquet_to_sqlite(df, sqlite_db_path)
