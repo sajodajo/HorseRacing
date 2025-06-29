@@ -34,71 +34,9 @@ st.html(
     """,
 )
 
-# Inject custom CSS for styling
-st.markdown(
-    """
-    <style>
-    /* Set primary colors */
-    :root {
-        --primary-green: #75C200;
-        --primary-blue: #000066;
-        --accent-blue: #47BFFF;
-    }
 
-    /* General body styling */
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: var(--primary-blue);
-        color: white;
-    }
-
-    /* Style links without underlining */
-    a {
-        color: var(--accent-blue);
-        text-decoration: none;
-    }
-    a:hover {
-        color: var(--primary-green);
-        text-decoration: underline;
-    }
-
-    /* Style headers */
-    h1, h2, h3 {
-        color: var(--primary-green);
-    }
-
-    /* Style buttons */
-    .stButton>button {
-        background-color: var(--primary-green);
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-    }
-    .stButton>button:hover {
-        background-color: var(--accent-blue);
-        color: black;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 st.title("Welcome to the Horse Racing Strategy App")   
 st.caption("MBD - Sports Analytics | Vandad Vafai, Joaquin Miño, Marius Gnoth, Sam Jones, Maine Isasi")
-
-
-# Sidebar filters with gold icons and titles
-# with st.sidebar:
-#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>📅</span> Date</div>", unsafe_allow_html=True)
-#     st.date_input("", key="date_input_home")
-#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>🏟️</span> Racecourse</div>", unsafe_allow_html=True)
-#     st.selectbox("", ["Saratoga", "Belmont", "Aqueduct"], key="racecourse_input_home")
-#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>🐴</span> Horse</div>", unsafe_allow_html=True)
-#     st.text_input("", key="horse_input_home")
-#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>👨‍✈️</span> Jockey</div>", unsafe_allow_html=True)
-#     st.text_input("", key="jockey_input_home")
-#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>💰</span> Odds Range</div>", unsafe_allow_html=True)
-#     st.slider("", 1.0, 100.0, (1.0, 20.0), key="odds_input_home")
 
 
 @st.cache_data
