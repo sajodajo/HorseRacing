@@ -71,6 +71,7 @@ High-level structure of the repository:
 
 ## Prerequisites for Setup
 - uv or pip (Python package installer)
+- OpenAI API Key (optional)
 
 To install `uv`, run the following command:
 
@@ -110,6 +111,28 @@ uv sync
 .venv/Scripts/activate # or source venv/bin/activate
 ```
 
+#### AI Agent Setup (optional)
+
+Add a `.env` file to the root of the repo and add your OpenAI API key `OPENAI_API_KEY="sk-...`
+
+#### Instantiate database 
+
+Run the script to clean and preprocess the initial dataset:
+
+```bash
+uv run src/ingestion/preprocessing_pipeline.py
+```
+
+A `.parquet` and `.db` will be saved under `data/processed`.
+
+### Run Streamlit App
+
+To run the Streamlit app, run the following command from the root:
+
+```bash
+uv run streamlit run src/ui/Home.py
+```
+
 To add new dependencies just run:
 
 ```bash
@@ -117,12 +140,6 @@ uv add <library-name>
 
 # or to remove again
 uv remove <library-name>
-```
-
-To run the Streamlit app, run the following command from the root:
-
-```bash
-uv run streamlit run src/ui/Home.py
 ```
 
 

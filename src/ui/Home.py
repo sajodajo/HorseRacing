@@ -13,10 +13,11 @@ from src.utils.track_statistics import calculate_track_summary_stats_landingpage
 
 
 # Load the logo
-logo_path = "src/assets/ie_logo.png"
+logo_path = "src/assets/logo_green.jpg"
 st.logo(
     logo_path,
     size="large",
+    icon_image=logo_path,
 )
 
 
@@ -87,19 +88,17 @@ st.caption("MBD - Sports Analytics | Vandad Vafai, Joaquin Miño, Marius Gnoth, 
 
 
 # Sidebar filters with gold icons and titles
-with st.sidebar:
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>📅</span> Date</div>", unsafe_allow_html=True)
-    st.date_input("", key="date_input_home")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>🏟️</span> Racecourse</div>", unsafe_allow_html=True)
-    st.selectbox("", ["Saratoga", "Belmont", "Aqueduct"], key="racecourse_input_home")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>🐴</span> Horse</div>", unsafe_allow_html=True)
-    st.text_input("", key="horse_input_home")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>👨‍✈️</span> Jockey</div>", unsafe_allow_html=True)
-    st.text_input("", key="jockey_input_home")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>💰</span> Odds Range</div>", unsafe_allow_html=True)
-    st.slider("", 1.0, 100.0, (1.0, 20.0), key="odds_input_home")
-    st.markdown("---")
-    st.markdown("<span style='color:#D4AF37;'>Use filters to refine your analysis.</span>", unsafe_allow_html=True)
+# with st.sidebar:
+#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>📅</span> Date</div>", unsafe_allow_html=True)
+#     st.date_input("", key="date_input_home")
+#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>🏟️</span> Racecourse</div>", unsafe_allow_html=True)
+#     st.selectbox("", ["Saratoga", "Belmont", "Aqueduct"], key="racecourse_input_home")
+#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>🐴</span> Horse</div>", unsafe_allow_html=True)
+#     st.text_input("", key="horse_input_home")
+#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>👨‍✈️</span> Jockey</div>", unsafe_allow_html=True)
+#     st.text_input("", key="jockey_input_home")
+#     st.markdown("<div class='sidebar-title'><span class='gold-icon'>💰</span> Odds Range</div>", unsafe_allow_html=True)
+#     st.slider("", 1.0, 100.0, (1.0, 20.0), key="odds_input_home")
 
 
 @st.cache_data
