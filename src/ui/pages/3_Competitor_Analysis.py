@@ -1,117 +1,125 @@
 import streamlit as st
+import polars as pl
+import pathlib
+import plotly.graph_objects as go
+import pandas as pd
 
 st.set_page_config(page_title="Competitor Analysis", layout="wide")
 
-# Custom CSS for clean white theme and style guide
-st.markdown('''
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@400;700&display=swap');
-    html, body, [class*="css"]  {
-        background-color: #F9F7F1;
-        color: #014421;
-        font-family: 'Lato', sans-serif;
-    }
-    h1, h2, h3, h4, h5, h6 {
-        font-family: 'Playfair Display', serif;
-        color: #014421;
-        border-bottom: 2px solid #D4AF37;
-        padding-bottom: 0.2em;
-        margin-bottom: 0.5em;
-    }
-    .main .block-container {
-        padding-top: 2rem;
-    }
-    .stButton>button {
-        background-color: #D4AF37;
-        color: #014421;
-        border-radius: 6px;
-        font-weight: bold;
-        border: none;
-        padding: 0.5rem 1.5rem;
-        margin: 0.5rem 0;
-        font-family: 'Lato', sans-serif;
-    }
-    .stButton>button:hover {
-        background-color: #014421;
-        color: #D4AF37;
-    }
-    .card {
-        background: #fff;
-        border: 2px solid #8B4513;
-        border-radius: 10px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 24px rgba(1,68,33,0.08);
-        color: #014421;
-        font-family: 'Lato', sans-serif;
-    }
-    .footer {
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background: #F9F7F1;
-        color: #8B4513;
-        text-align: center;
-        padding: 0.5rem 0;
-        font-size: 0.9rem;
-        z-index: 100;
-        border-top: 2px solid #D4AF37;
-    }
-    .sidebar-title {
-        color: #D4AF37;
-        font-family: 'Playfair Display', serif;
-        font-size: 1.3em;
-        margin-bottom: 0.5em;
-        display: flex;
-        align-items: center;
-        gap: 0.5em;
-    }
-    .gold-icon {
-        color: #D4AF37;
-        font-size: 1.2em;
-        margin-right: 0.3em;
-    }
-    </style>
-''', unsafe_allow_html=True)
+@st.cache_data
+def load_competitor_data():
+    parquet_path = pathlib.Path.cwd() / "data" / "processed" / "df_clean.parquet"
+    df = pl.scan_parquet(str(parquet_path)).collect()
+    return df
 
-# Single clean header with quick stats (dummy values)
-st.markdown("""
-<div style='display: flex; align-items: center; justify-content: space-between;'>
-    <div style='display: flex; align-items: center;'>
-        <h1 style='margin-bottom: 0;'>Competitor Analysis</h1>
-    </div>
-    <div style='text-align: right;'>
-        <span style='font-size: 1.2rem; color: #800020;'>🏇 Compare Horses & Racers</span>
-    </div>
-</div>
-<hr style='border: 1px solid #D4AF37; margin-bottom: 2rem;'>
-""", unsafe_allow_html=True)
+df = load_competitor_data()
 
-# Sidebar filters with gold icons and titles
-with st.sidebar:
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>📅</span> Date</div>", unsafe_allow_html=True)
-    st.date_input("", key="date_input_comp")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>🏟️</span> Racecourse</div>", unsafe_allow_html=True)
-    st.selectbox("", ["Belmont", "Saratoga", "Aqueduct"], key="racecourse_input_comp")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>🐴</span> Horse</div>", unsafe_allow_html=True)
-    st.text_input("", key="horse_input_comp")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>👨‍✈️</span> Jockey</div>", unsafe_allow_html=True)
-    st.text_input("", key="jockey_input_comp")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>💰</span> Odds Range</div>", unsafe_allow_html=True)
-    st.slider("", 1.0, 100.0, (1.0, 20.0), key="odds_input_comp")
-    st.markdown("---")
-    st.markdown("<span style='color:#D4AF37;'>Use filters to refine your analysis.</span>", unsafe_allow_html=True)
+track_ids = df.select("track_id").unique().sort("track_id").to_series().to_list()
+track_names_map = {"SAR": "Saratoga Race Course", "BEL": "Belmont Park", "AQU": "Aqueduct Racetrack"}
+track_options = [track_names_map.get(t, t) for t in track_ids]
+track_id_map = {v: k for k, v in track_names_map.items()}
 
-# Main panel: Competitor cards
-if 'num_cards' not in st.session_state:
-    st.session_state['num_cards'] = 1
+st.title("Competitor Analysis")
+st.write("Compare up to 6 combinations of racetrack, jockey, and horse.")
 
-def add_card():
-    st.session_state['num_cards'] += 1
+num_cards = 6
+results = []
 
-for i in range(st.session_state['num_cards']):
-    with st.container():
-        st.markdown(f"<div class='card'>\n<h2>Competitor {i+1}</h2>\n<b>Name:</b> Dummy Horse/Racer {i+1}<br>\n<b>Rating:</b> 4.{i+1} / 5<br>\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque lacus risus, lobortis quis risus sit amet, porta sodales tellus. Fusce in finibus lacus.<br><br>\n<b>We Recommend...</b><br>\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque lacus risus, lobortis quis risus sit amet, porta sodales tellus. Fusce in finibus lacus.<br><br>\n<button style='background:#D4AF37;color:#014421;font-weight:bold;padding:0.5rem 1.5rem;border-radius:6px;border:none;'>View Details</button>\n</div>", unsafe_allow_html=True)
+for row in range(2):
+    cols = st.columns(3)
+    for i in range(3):
+        card_idx = row * 3 + i
+        with cols[i]:
+            st.subheader(f"Flashcard {card_idx+1}")
+            with st.expander("Selection", expanded=True):
+                selected_track_name = st.selectbox(f"Select Racetrack {card_idx+1}", track_options, key=f"track_{card_idx}")
+                selected_track_id = track_id_map.get(selected_track_name, selected_track_name)
+                track_df = df.filter(pl.col("track_id") == selected_track_id)
+                jockeys = track_df.select("jockey").unique().sort("jockey").to_series().to_list()
+                if jockeys:
+                    selected_jockey = st.selectbox(f"Select Jockey {card_idx+1}", jockeys, key=f"jockey_{card_idx}")
+                    jockey_df = track_df.filter(pl.col("jockey") == selected_jockey)
+                else:
+                    selected_jockey = None
+                    jockey_df = None
+                horses = jockey_df.select("horse_name").unique().sort("horse_name").to_series().to_list() if jockey_df is not None else []
+                if horses:
+                    selected_horse = st.selectbox(f"Select Horse {card_idx+1}", horses, key=f"horse_{card_idx}")
+                    horse_df = jockey_df.filter(pl.col("horse_name") == selected_horse)
+                else:
+                    selected_horse = None
+                    horse_df = None
+            if horse_df is not None and horse_df.height > 0:
+                num_races = horse_df.select("race_number").height
+                horse_all_df = track_df.filter(pl.col("horse_name") == selected_horse)
+                avg_horse_position = horse_all_df.select("position_at_finish").mean().item()
+                avg_jockey_position = jockey_df.select("position_at_finish").mean().item()
+                st.markdown(f"**Racetrack:** {selected_track_name}")
+                st.markdown(f"**Jockey:** {selected_jockey}")
+                st.markdown(f"**Horse:** {selected_horse}")
+                st.metric("Number of Races at Track", num_races)
+                st.metric("Horse Avg. Finishing Position", f"{avg_horse_position:.2f}")
+                st.metric("Jockey Avg. Finishing Position", f"{avg_jockey_position:.2f}")
+                results.append({
+                    "racetrack": selected_track_name,
+                    "jockey": selected_jockey,
+                    "num_races": num_races,
+                    "avg_horse_position": avg_horse_position,
+                    "avg_jockey_position": avg_jockey_position,
+                    "horse": selected_horse,
+                    "flashcard": f"Flashcard {card_idx+1}"
+                })
+            elif selected_jockey and not horses:
+                st.info("No horses found for this jockey at this racetrack.")
+                results.append(None)
+            elif selected_track_id and not jockeys:
+                st.info("No jockeys found for this racetrack.")
+                results.append(None)
+            else:
+                results.append(None)
 
-st.button("Add Competitor", on_click=add_card)
+st.markdown("---")
+st.subheader("Comparison Plots by Racetrack and Metric")
+results_df = pd.DataFrame([r for r in results if r is not None])
+if not results_df.empty:
+    for racetrack in results_df['racetrack'].unique():
+        racetrack_df = results_df[results_df['racetrack'] == racetrack]
+        if racetrack_df.empty:
+            continue
+        st.markdown(f"### {racetrack}")
+        # 1. Number of Races
+        fig1 = go.Figure()
+        fig1.add_trace(go.Bar(
+            x=racetrack_df['flashcard'],
+            y=racetrack_df['num_races'],
+            name='Number of Races',
+            text=[f"Horse: {h}<br>Jockey: {j}" for h, j in zip(racetrack_df['horse'], racetrack_df['jockey'])],
+            marker_color='royalblue'
+        ))
+        fig1.update_layout(title='Number of Races', xaxis_title='Flashcard', yaxis_title='Number of Races', hovermode='x unified', height=400)
+        st.plotly_chart(fig1, use_container_width=True)
+        # 2. Horse Avg. Finishing Position
+        fig2 = go.Figure()
+        fig2.add_trace(go.Bar(
+            x=racetrack_df['flashcard'],
+            y=racetrack_df['avg_horse_position'],
+            name='Horse Avg. Finishing Position',
+            text=[f"Horse: {h}<br>Jockey: {j}" for h, j in zip(racetrack_df['horse'], racetrack_df['jockey'])],
+            marker_color='orange'
+        ))
+        fig2.update_layout(title='Horse Avg. Finishing Position', xaxis_title='Flashcard', yaxis_title='Avg. Finishing Position', hovermode='x unified', height=400)
+        st.plotly_chart(fig2, use_container_width=True)
+        # 3. Jockey Avg. Finishing Position
+        fig3 = go.Figure()
+        fig3.add_trace(go.Bar(
+            x=racetrack_df['flashcard'],
+            y=racetrack_df['avg_jockey_position'],
+            name='Jockey Avg. Finishing Position',
+            text=[f"Horse: {h}<br>Jockey: {j}" for h, j in zip(racetrack_df['horse'], racetrack_df['jockey'])],
+            marker_color='green'
+        ))
+        fig3.update_layout(title='Jockey Avg. Finishing Position', xaxis_title='Flashcard', yaxis_title='Avg. Finishing Position', hovermode='x unified', height=400)
+        st.plotly_chart(fig3, use_container_width=True)
+else:
+    st.info("No valid flashcard results to plot.")
 
