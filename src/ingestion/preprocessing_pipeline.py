@@ -20,11 +20,13 @@ horse_global_ids = os.path.abspath(os.path.join(BASE_DIR, "../../data/raw/horse_
 horse_names = os.path.abspath(os.path.join(BASE_DIR, "../../data/raw/horse_names.csv"))
 processed_data_dir = os.path.abspath(os.path.join(BASE_DIR, "../../data/processed"))
 
-##########################################
-# Preprocessing for Data Explorer
-##########################################
 
 def load_data(main_file_path, horse_global_ids, horse_names):
+
+    ##########################################
+    # Loading, Re-Mapping, Formatting
+    ##########################################
+
 
     df = pl.read_parquet(main_file_path)
     df_horse_ids = pl.read_csv(horse_global_ids)
@@ -53,9 +55,16 @@ def load_data(main_file_path, horse_global_ids, horse_names):
 
     print(f"Loaded {df.shape[0]} rows and {df.shape[1]} columns")
 
+   
+   # Scale conversions
+    df = df.with_columns([
+        ((pl.col("distance_id") / 100) * 201.168).round(2).alias("distance_id_m"),  # convert distance_id (furlongs) to meters
+        (pl.col("run_up_distance").cast(pl.Float64) / 3.28084).round(2).alias("run_up_distance_m")  # convert run_up_distance (feet) to meters
+    ])
+
 
     ##########################################
-    # Filtering, Mapping
+    # Filtering
     ##########################################
 
     #TODO: FILTER OUT EDGE CASES, FOCUS ON RACE TYPES, NULLS etc.
@@ -93,8 +102,6 @@ def load_data(main_file_path, horse_global_ids, horse_names):
          pl.col("race_date").cast(pl.Utf8) + "_" +
          pl.col("race_number").cast(pl.Utf8)).alias("rid")
     ])
-
-    print(f"Unique horses: {df['horse_pk'].n_unique()}")
 
     # same for supplementary dataset
 
@@ -326,8 +333,7 @@ def load_data(main_file_path, horse_global_ids, horse_names):
         pl.col("longitude").shift(1).over("horse_pk").alias("prev_longitude"),
         pl.col("time_seconds").shift(1).over("horse_pk").alias("prev_time_seconds"),
         (pl.col("trakus_index") == pl.col("trakus_index").min().over("horse_pk")).alias("is_first_obs")
-
-        )
+    )
     
     # Calculate distance in meters using haversine formula
     # distance between two consecutive Trakus points.
@@ -353,6 +359,11 @@ def load_data(main_file_path, horse_global_ids, horse_names):
         pl.col("distance_m").cum_sum().over("horse_pk").alias("cumulative_distance_m")
     ])
 
+    # Corrected by run_up_distance_m
+    df = df.with_columns([
+        (pl.col("cumulative_distance_m") - pl.col("run_up_distance_m")).alias("cum_race_distance_m")
+    ])
+
     # Calculate speed in km/h
     # Speed = Distance / Time * 3.6 (to convert m/s to km/h)
 
@@ -367,45 +378,55 @@ def load_data(main_file_path, horse_global_ids, horse_names):
         ).otherwise(None).alias("speed_kmh")
     ])
 
+    # start and end of race AQU_2019-01-01_1_1
     print("Verify distance and speed calculations:")
     print("Start of race:")
-    print(df.select(["horse_pk", "trakus_index", "time_seconds", "distance_m", "speed_kmh"]).head(10))
+    print(df.select(["horse_pk", "trakus_index", "time_seconds", "distance_m", "speed_kmh", "cum_race_distance_m"]).head(10))
 
-    # end of race AQU_2019-01-01_1_1
+    
     print("End of race:")
-    print(f"{df.filter(pl.col("horse_pk") == "AQU_2019-01-01_1_1").select(["horse_pk","trakus_index", "time_seconds", "distance_m", "speed_kmh"]).tail(10)}")
+    print(f"{df.filter(pl.col("horse_pk") == "AQU_2019-01-01_1_1").select(["horse_pk","trakus_index", "time_seconds", "distance_m", "speed_kmh", "cum_race_distance_m"]).tail(10)}")
 
-
-    ##########################################
-    # Rolling averages etc.
-    ##########################################
+    print("Compare with original distance_id:")
+    print(
+        df.filter(pl.col("rid") == "AQU_2019-01-01_1")
+        .select(["trakus_index", "horse_pk", "distance_id_m", "cumulative_distance_m", "cum_race_distance_m"])
+        .sort(["trakus_index", "position_rank"])
+    )
 
     ##########################################
     # Race Progress per horse per race
     ##########################################
 
+    # by covered distance (race progress)
     df = df.with_columns([
-        pl.col("cumulative_distance_m")
-        .rank("dense", descending=True)  # or "min", "ordinal", etc., with reverse=True
+        pl.col("cum_race_distance_m")
+        .rank("dense", descending=True)
         .over(["rid", "trakus_index"])
         .alias("position_rank")
     ])
 
-
-    print(
-        df.filter(pl.col("rid") == "AQU_2019-01-01_1")
-        .select(["trakus_index", "horse_pk", "cumulative_distance_m", "position_rank"])
-        .sort(["trakus_index", "position_rank"])
-    )
+    print("Sample ranking at different time points:")
+    sample_race = df.filter(pl.col("rid") == "AQU_2019-01-01_1")
+    for time_point in [10, 50, 100]:
+        print(f"\nAt trakus_index {time_point}:")
+        print(
+            sample_race
+            .filter(pl.col("trakus_index") == time_point)
+            .select(["horse_pk", "cum_race_distance_m", "position_rank"])
+            .sort("position_rank")
+        )
 
     ##########################################
     # Relative Rank per Horse per Race at each timestep
     ##########################################
 
-    #TODO: calculate each horse's relative position at each race point using race_progress
+    #TODO: calculate each horse's relative position at each race point
 
 
     #TODO: Log statistics after preporcessing (number of rows, horses)
+
+    print(f"Final shape of {df.shape[0]} rows and {df.shape[1]} columns")
 
 
     return df
@@ -462,9 +483,6 @@ def parquet_to_sqlite(df, db_path):
 
 if __name__ == "__main__":
     df = load_data(main_file_path, horse_global_ids, horse_names)
-
-    # feature test
-    # print(df.select(["horse_pk", "trakus_index", "race_progress"]).head())
 
     # save as parquet
     store_processed_df(df)
