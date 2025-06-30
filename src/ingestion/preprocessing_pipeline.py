@@ -302,9 +302,15 @@ def load_data(main_file_path, horse_global_ids, horse_names):
     ])
 
     # odds to implied probability
+    # Divide by 100 to derive the odds to 1.
+    # 1280 would be 12.8-1
+
     df = df.with_columns([
-        (1 / (pl.col("odds") + 1)).round(2).alias("implied_win_probability")
+        (pl.col("odds") /100).cast(pl.Float64).alias("odds_to_one"),  # convert odds to float
+        (1 / ((pl.col("odds") / 100) + 1)).round(4).alias("implied_win_probability")
     ])
+
+    print(df["implied_win_probability"].head(10))
 
     ##########################################
     # Distance and Speed Calculation
@@ -605,5 +611,5 @@ if __name__ == "__main__":
     store_grouped_df_csv(df)
     
     # save as sqlite database for LLM agents (comment if not needed - takes extra time)
-    sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
-    parquet_to_sqlite(df, sqlite_db_path)
+    # sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
+    # parquet_to_sqlite(df, sqlite_db_path)

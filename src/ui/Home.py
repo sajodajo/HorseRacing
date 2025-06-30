@@ -88,9 +88,16 @@ def display_track_metrics(track_name, stats):
     st.metric("Unique Horses", stats["num_horses"])
     st.metric("Unique Jockeys", stats["num_jockeys"])
 
-with col1: display_track_metrics("Saratoga Race Course", sar_stats)
-with col2: display_track_metrics("Belmont Park", bel_stats)
-with col3: display_track_metrics("Aqueduct Racetrack", aqu_stats)
+
+
+with col1:
+    display_track_metrics("Aqueduct Racetrack", aqu_stats)
+
+with col2:
+    display_track_metrics("Belmont Park", bel_stats)
+
+with col3:
+    display_track_metrics("Saratoga Race Course", sar_stats)
 
 
 
