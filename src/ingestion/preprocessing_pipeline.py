@@ -605,5 +605,5 @@ if __name__ == "__main__":
     store_grouped_df_csv(df)
     
     # save as sqlite database for LLM agents (comment if not needed - takes extra time)
-    # sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
-    # parquet_to_sqlite(df, sqlite_db_path)
+    sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
+    parquet_to_sqlite(df, sqlite_db_path)
