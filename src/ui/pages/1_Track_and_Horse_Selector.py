@@ -28,8 +28,6 @@ selected_track = st.sidebar.selectbox(
     "Select Track",
     options=df.select("track_id").drop_nulls().unique().to_series().sort().to_list()
 )
-
-# Filter by selected track
 df_track = df.filter(pl.col("track_id") == selected_track)
 
 # Date selection
@@ -38,57 +36,107 @@ selected_date = st.sidebar.selectbox(
     "Select Date",
     options=date_options
 )
-
-# Filter by selected date
 df_date = df_track.filter(pl.col("race_date") == selected_date)
 
-# Race selection
-race_options = df_date.select("rid").drop_nulls().unique().to_series().sort().to_list()
-selected_race = st.sidebar.selectbox(
-    "Select Race",
-    options=race_options
-)
-
-# Filter by selected race
-df_race = df_date.filter(pl.col("rid") == selected_race)
-
 # Course type selection
-course_type_options = df_race.select("course_type").drop_nulls().unique().to_series().sort().to_list()
+course_type_options = df_date.select("course_type").drop_nulls().unique().to_series().sort().to_list()
 selected_course_type = st.sidebar.selectbox(
     "Select Course Type",
     options=course_type_options
 )
+df_course_type = df_date.filter(pl.col("course_type") == selected_course_type)
 
-# Filter by selected course type
-df_course_type = df_race.filter(pl.col("course_type") == selected_course_type)
-
-# Horse selection
-horse_options = df_course_type.select(["horse_pk", "horse_name"]).unique().sort("horse_name")
-horse_names = horse_options.select("horse_name").to_series().to_list()
-selected_horse_name = st.sidebar.selectbox(
-    "Select Horse",
-    options=horse_names
+# Race selection
+race_options = df_course_type.select("rid").drop_nulls().unique().to_series().sort().to_list()
+selected_race = st.sidebar.selectbox(
+    "Select Race",
+    options=race_options
 )
+df_race = df_course_type.filter(pl.col("rid") == selected_race)
 
-# Filter by selected horse
-selected_horse_pk = horse_options.filter(pl.col("horse_name") == selected_horse_name).select("horse_pk")[0, 0]
-horse_df = df_course_type.filter(pl.col("horse_pk") == selected_horse_pk)
 
-# Display filtered data
-st.write(horse_df.head())
+# Display key race information
+st.markdown("### Race Information")
+num_horses = df_race.select(pl.col("horse_pk").n_unique())[0, 0]
+st.write(f"**Number of Horses in Race:** {num_horses}")
 
-# df with selected columns
+# Odds per horse
+odds_per_horse = df_race.select(["horse_pk", "horse_name", "jockey", "odds"]).unique().sort("odds")
+st.write("**Odds per Horse:**")
+st.dataframe(odds_per_horse.to_pandas())
 
-# horse_df = horse_df.select([
-# ["jockey", "horse_name", "race_date", "odds", "win", ]
-# Show race info of selected horse
-fig = px.scatter(
-    horse_df,
+# Winner horse
+winner = df_race.filter(pl.col("position_at_finish") == 1).select(["horse_name", "jockey"]).to_pandas()
+if not winner.empty:
+    st.write(f"**Winner Horse and Jockey:** {winner.iloc[0]['horse_name']} (Jockey: {winner.iloc[0]['jockey']})")
+else:
+    st.write("**Winner Horse and Jockey:** Not available")
+
+# Visualize race progress
+st.markdown("### Race Progress Visualization")
+
+# Calculate fixed axis ranges for the map visualization
+x_min, x_max = df_race.select(
+    pl.col("longitude").min().alias("x_min"),
+    pl.col("longitude").max().alias("x_max")
+).row(0)
+
+y_min, y_max = df_race.select(
+    pl.col("latitude").min().alias("y_min"),
+    pl.col("latitude").max().alias("y_max")
+).row(0)
+
+# 1. Animated Scatter Plot: Race Progress on the Map
+fig_map = px.scatter(
+    df_race.to_pandas(),
     x="longitude",
     y="latitude",
-    color="trakus_index",
-    hover_data=["race_date", "horse_name", "jockey", "odds", "position_at_finish"],
-    color_continuous_scale="greens"
+    animation_frame="trakus_index",
+    animation_group="horse_pk",
+    color="speed_kmh",
+    color_continuous_scale="hot",
+    hover_data=["horse_pk", "speed_kmh", "cum_race_distance_m"],
+    title=f"Race Progress for {selected_race}"
 )
 
-st.plotly_chart(fig, use_container_width=True)
+# Set fixed axis ranges
+fig_map.update_layout(
+    xaxis=dict(range=[x_min, x_max]),
+    yaxis=dict(range=[y_min, y_max])
+)
+
+st.plotly_chart(fig_map, use_container_width=True)
+
+df_race_pandas = df_race.to_pandas()
+
+
+df_race_pandas = df_race.to_pandas()
+
+# 2. Scatter Plot: Speed Over Time
+fig_speed = px.line(
+    df_race_pandas,
+    x="trakus_index",
+    y="speed_kmh",
+    color="horse_name",
+    title="Horse Speed Over Time",
+    labels={"trakus_index": "Time (Trakus Index)", "speed_kmh": "Speed (km/h)"},
+    hover_data=["cum_race_distance_m", "position_rank"]
+)
+st.plotly_chart(fig_speed, use_container_width=True)
+
+
+# 3. Line Chart: Position Rank Over Time
+fig_position = px.line(
+    df_race_pandas,
+    x="trakus_index",
+    y="position_rank",
+    color="horse_name",
+    title="Horse Position Over Time",
+    labels={"trakus_index": "Time (Trakus Index)", "position_rank": "Position Rank"},
+    hover_data=["cum_race_distance_m", "speed_kmh"]
+)
+fig_position.update_layout(
+    yaxis=dict(autorange="reversed")
+)
+
+st.plotly_chart(fig_position, use_container_width=True)

@@ -301,6 +301,11 @@ def load_data(main_file_path, horse_global_ids, horse_names):
         (pl.col("position_at_finish") == 1).cast(pl.Int8).alias("win")
     ])
 
+    # odds to implied probability
+    df = df.with_columns([
+        (1 / (pl.col("odds") + 1)).round(2).alias("implied_win_probability")
+    ])
+
     ##########################################
     # Distance and Speed Calculation
     ##########################################
@@ -362,6 +367,13 @@ def load_data(main_file_path, horse_global_ids, horse_names):
         (pl.col("cumulative_distance_m") - pl.col("run_up_distance_m")).alias("cum_race_distance_m")
     ])
 
+    #TODO: VALIDATE CUMULATIVE DISTANCE AGAINST DISTANCE_ID_M
+
+    # max race cumulative distance per race
+    df = df.with_columns([
+        pl.col("cumulative_distance_m").max().over("rid").alias("race_max_distance_m")
+    ])
+
     # Calculate speed in km/h
     # Speed = Distance / Time * 3.6 (to convert m/s to km/h)
 
@@ -373,7 +385,7 @@ def load_data(main_file_path, horse_global_ids, horse_names):
             (pl.col("time_seconds") - pl.col("prev_time_seconds") > 0)
         ).then(
             (pl.col("distance_m") / (pl.col("time_seconds") - pl.col("prev_time_seconds"))) * 3.6
-        ).otherwise(None).alias("speed_kmh")
+        ).otherwise(0.0).alias("speed_kmh")
     ])
 
     # start and end of race AQU_2019-01-01_1_1
@@ -385,11 +397,8 @@ def load_data(main_file_path, horse_global_ids, horse_names):
     print("End of race:")
     print(f"{df.filter(pl.col("horse_pk") == "AQU_2019-01-01_1_1").select(["horse_pk","trakus_index", "time_seconds", "distance_m", "speed_kmh", "cum_race_distance_m"]).tail(10)}")
 
-    print("Compare with original distance_id:")
-
-
     ##########################################
-    # Race Progress per horse per race
+    # Race Position Ranking
     ##########################################
 
     # by covered distance (race progress)
@@ -417,26 +426,73 @@ def load_data(main_file_path, horse_global_ids, horse_names):
         )
 
     ##########################################
-    # Relative Rank per Horse per Race at each timestep
+    # Race Progress per horse per race
+    ##########################################
+    
+
+    df = df.with_columns([
+        (pl.col("cumulative_distance_m") / pl.col("race_max_distance_m")).alias("pctComplete")
+    ])
+
+    # Add race segment classification based on pctComplete
+    df = df.with_columns([
+        pl.when(pl.col("pctComplete") < 0.25)
+        .then(pl.lit("Q1"))
+        .when(pl.col("pctComplete") < 0.50)
+        .then(pl.lit("Q2"))
+        .when(pl.col("pctComplete") < 0.75)
+        .then(pl.lit("Q3"))
+        .when(pl.col("pctComplete") <= 1.00)
+        .then(pl.lit("Q4"))
+        .otherwise(pl.lit("Q4"))  # Fallback for any edge cases
+        .alias("Segment")
+    ])
+
+    # Create segment-based speed aggregations
+    speed_aggregations = df.group_by(["horse_pk", "Segment"]).agg([
+        pl.col("speed_kmh").mean().alias("avg_speed")
+    ]).pivot(
+        index="horse_pk", 
+        on="Segment", 
+        values="avg_speed"
+    ).rename({
+        "Q1": "speed_Q1",
+        "Q2": "speed_Q2", 
+        "Q3": "speed_Q3",
+        "Q4": "speed_Q4"
+    })
+
+    # Create segment-based position aggregations
+    position_aggregations = df.group_by(["horse_pk", "Segment"]).agg([
+        pl.col("position_rank").median().alias("median_position")
+    ]).pivot(
+        index="horse_pk",
+        on="Segment", 
+        values="median_position"
+    ).rename({
+        "Q1": "pos_Q1",
+        "Q2": "pos_Q2",
+        "Q3": "pos_Q3", 
+        "Q4": "pos_Q4"
+    })
+
+    # Join the aggregations back to the main dataframe
+    df = df.join(speed_aggregations, on="horse_pk", how="left")
+    df = df.join(position_aggregations, on="horse_pk", how="left")
+
+    ##########################################
+    # Wrapping up
     ##########################################
 
-    #TODO: calculate each horse's relative position at each race point
-
-
-    #TODO: Log statistics after preporcessing (number of rows, horses)
+    # TODO: Dropping columns that are not needed anymore
 
     print(f"Final shape of {df.shape[0]} rows and {df.shape[1]} columns")
 
-
     return df
 
-##########################################
-# TODO: FILTERED SUBSET WITH ONLY TOP 3 RACE DISTANCES FOR STRATEGY PAGE
-##########################################
-
 
 ##########################################
-# Save to processed folder
+# Save files to data/processed/ folder
 ##########################################
 
 def store_processed_df(df):
@@ -450,6 +506,61 @@ def store_processed_df(df):
         os.makedirs(processed_data_dir)
 
     df.write_parquet(processed_file_name)
+
+
+def store_selected_columns_df(df, columns, file_name):
+    """
+    Store selected columns of the dataframe in a separate parquet file.
+    If the file already exists, it will be overwritten.
+    """
+    selected_df = df.select(columns)
+    file_path = os.path.join(processed_data_dir, file_name)
+
+    # if processed dir does not exist generate
+    if not os.path.exists(processed_data_dir):
+        os.makedirs(processed_data_dir)
+
+    selected_df.write_parquet(file_path)
+    print(f"Stored selected columns to {file_path}")
+
+
+def store_grouped_df_csv(df):
+    """
+    Store grouped dataframe in subdirectory. If already exists overwrite last file.
+    """
+    # Group by horse_pk and aggregate using first() for all columns
+    finalDF = df.group_by('horse_pk').agg([
+        pl.col('track_id').first(),
+        pl.col('distance_id').first(),
+        pl.col('course_type').first(),
+        pl.col('track_condition').first(),
+        pl.col('race_type').first(),
+        pl.col('win').first(),
+        pl.col('speed_Q1').first(),
+        pl.col('speed_Q2').first(),
+        pl.col('speed_Q3').first(),
+        pl.col('speed_Q4').first(),
+        pl.col('pos_Q1').first(),
+        pl.col('pos_Q2').first(),
+        pl.col('pos_Q3').first(),
+        pl.col('pos_Q4').first(),
+    ])
+    
+    # Drop rows where any of the position quarters are null
+    finalDF = finalDF.drop_nulls(subset=['pos_Q1', 'pos_Q2', 'pos_Q3', 'pos_Q4'])
+    
+    # Save as CSV
+    grouped_file_name = os.path.join(processed_data_dir, "trackStrategy.csv")
+    
+    # if processed dir does not exist generate
+    if not os.path.exists(processed_data_dir):
+        os.makedirs(processed_data_dir)
+    
+    finalDF.write_csv(grouped_file_name)
+    print(f"Stored track strategy dataframe to {grouped_file_name}")
+    
+    return finalDF
+
 
 def parquet_to_sqlite(df, db_path):
     """
@@ -483,9 +594,16 @@ def parquet_to_sqlite(df, db_path):
 if __name__ == "__main__":
     df = load_data(main_file_path, horse_global_ids, horse_names)
 
-    # save as parquet
+    # save main file as parquet
     store_processed_df(df)
+
+    # save selected columns for UI
+    selected_cols = ['race_type','track_id','distance_id','course_type','track_condition','latitude', 'longitude','Segment']
+    store_selected_columns_df(df, selected_cols, "df_clean_col_subset.parquet")
+
+    # save grouped dataframe for UI
+    store_grouped_df_csv(df)
     
-    # # save as sqlite database for LLM agents
-    sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
-    parquet_to_sqlite(df, sqlite_db_path)
+    # save as sqlite database for LLM agents (comment if not needed - takes extra time)
+    # sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
+    # parquet_to_sqlite(df, sqlite_db_path)
