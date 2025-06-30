@@ -1,0 +1,7 @@
+[theme]
+base = "light"
+primaryColor = "#e30613"            # NYRA red
+backgroundColor = "#ffffff"         # White
+secondaryBackgroundColor = "#f5f7fa"  # Light gray
+textColor = "#0a1d49"               # NYRA navy
+font = "sans serif"
