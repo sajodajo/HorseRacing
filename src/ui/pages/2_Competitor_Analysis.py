@@ -6,6 +6,10 @@ import pandas as pd
 
 st.set_page_config(page_title="Competitor Analysis", layout="wide")
 
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.image('src/assets/NYRAlogo.png')
+
 @st.cache_data
 def load_competitor_data():
     parquet_path = pathlib.Path.cwd() / "data" / "processed" / "df_clean.parquet"

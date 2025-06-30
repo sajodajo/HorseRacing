@@ -13,13 +13,17 @@ from src.utils.track_statistics import calculate_track_summary_stats_landingpage
 
 
 # Load the logo
-logo_path = "src/assets/logo_green.jpg"
-st.logo(
-    logo_path,
-    size="large",
-    icon_image=logo_path,
-)
+# logo_path = "src/assets/logo_green.jpg"
+# st.logo(
+#     logo_path,
+#     size="large",
+#     icon_image=logo_path,
+# )
 
+## PAGE VISUALS ##
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.image('src/assets/NYRAlogo.png')
 
 # Hide the streamlit upper-right chrome
 st.html(
@@ -49,7 +53,7 @@ def load_preprocessed_df():
 df = load_preprocessed_df().collect()
 
 # one column per track with some key statistics
-st.markdown("### Available Tracks")
+st.markdown("### Available Tracks and Race Records")
 
 col1, col2, col3 = st.columns(3, border=True)
 

@@ -61,8 +61,8 @@ num_horses = df_race.select(pl.col("horse_pk").n_unique())[0, 0]
 st.write(f"**Number of Horses in Race:** {num_horses}")
 
 # Odds per horse
-odds_per_horse = df_race.select(["horse_pk", "horse_name", "jockey", "odds"]).unique().sort("odds")
-st.write("**Odds per Horse:**")
+odds_per_horse = df_race.select(["horse_pk", "horse_name", "jockey", "implied_win_probability"]).unique().sort("implied_win_probability")
+st.write("**Winning Probability per Horse:**")
 st.dataframe(odds_per_horse.to_pandas())
 
 # Winner horse
