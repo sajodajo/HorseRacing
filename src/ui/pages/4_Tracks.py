@@ -1,4 +1,15 @@
 import streamlit as st
+import pandas as pd
+import sys
+import pathlib 
+
+
+# Add project root to Python path
+project_root = pathlib.Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from src.utils.winClassifier import winClassifier
+from src.utils.winClassifier import strategyGuide
 
 st.set_page_config(page_title="Tracks", layout="wide")
 
@@ -87,22 +98,47 @@ st.markdown("""
 <hr style='border: 1px solid #D4AF37; margin-bottom: 2rem;'>
 """, unsafe_allow_html=True)
 
-# Sidebar filters with gold icons and titles
-with st.sidebar:
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>📅</span> Date</div>", unsafe_allow_html=True)
-    st.date_input("", key="date_input_tracks")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>🏟️</span> Racecourse</div>", unsafe_allow_html=True)
-    st.selectbox("", ["Belmont", "Saratoga", "Aqueduct"], key="racecourse_input_tracks")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>🐴</span> Horse</div>", unsafe_allow_html=True)
-    st.text_input("", key="horse_input_tracks")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>👨‍✈️</span> Jockey</div>", unsafe_allow_html=True)
-    st.text_input("", key="jockey_input_tracks")
-    st.markdown("<div class='sidebar-title'><span class='gold-icon'>💰</span> Odds Range</div>", unsafe_allow_html=True)
-    st.slider("", 1.0, 100.0, (1.0, 20.0), key="odds_input_tracks")
-    st.markdown("---")
-    st.markdown("<span style='color:#D4AF37;'>Use filters to refine your analysis.</span>", unsafe_allow_html=True)
 
-# Main panel content (dummy)
-st.markdown("## Explore Race Tracks")
-st.info("This page will provide information and statistics about different tracks.")
 
+
+df = pd.read_csv('data/processed/trackStrategy.csv')
+
+st.sidebar.header("Filter Race Conditions")
+
+# 1. Track ID selector
+track_options = sorted(df['track_id'].unique())
+selected_track = st.sidebar.selectbox("Track ID", track_options)
+
+# 2. Distance ID options depend on selected track
+distance_options = sorted(df[df['track_id'] == selected_track]['distance_id'].unique())
+selected_distance = st.sidebar.selectbox("Distance ID", distance_options)
+
+# 3. Course Type depends on track + distance
+course_options = sorted(df[(df['track_id'] == selected_track) & 
+                           (df['distance_id'] == selected_distance)]['course_type'].unique())
+selected_course = st.sidebar.selectbox("Course Type", course_options)
+
+# 4. Track Condition depends on prior 3
+cond_options = sorted(df[(df['track_id'] == selected_track) & 
+                         (df['distance_id'] == selected_distance) &
+                         (df['course_type'] == selected_course)]['track_condition'].unique())
+selected_condition = st.sidebar.selectbox("Track Condition", cond_options)
+
+# 5. Race Type depends on all 4 prior
+race_options = sorted(df[(df['track_id'] == selected_track) & 
+                         (df['distance_id'] == selected_distance) &
+                         (df['course_type'] == selected_course) &
+                         (df['track_condition'] == selected_condition)]['race_type'].unique())
+selected_race = st.sidebar.selectbox("Race Type", race_options)
+
+# ✅ Final filtered DataFrame
+filtered_df = df[(df['track_id'] == selected_track) &
+                 (df['distance_id'] == selected_distance) &
+                 (df['course_type'] == selected_course) &
+                 (df['track_condition'] == selected_condition) &
+                 (df['race_type'] == selected_race)]
+
+
+advice = strategyGuide(filtered_df, winClassifier(filtered_df))
+
+st.dataframe(advice)
