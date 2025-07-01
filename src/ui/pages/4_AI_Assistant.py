@@ -51,19 +51,6 @@ with col3:
     
 st.title("Chat with your AI Horse Racing Data Analyst :robot_face:")
 
-# Hide the streamlit upper-right chrome
-st.html(
-    """
-    <style>
-    [data-testid="stStatusWidget"] {
-            visibility: hidden;
-            height: 0%;
-            position: fixed;
-        }
-    </style>
-    """,
-)
-
 @st.cache_data
 def load_dataset_info():
     """Load dataset information for sidebar display"""
