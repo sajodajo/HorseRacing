@@ -4,10 +4,6 @@
 
 ## Data Sources
 
-### Main dataset  Column Descriptions
-
-### Main dataset Column Descriptions
-
 - `nyra_2019_complete` [https://www.kaggle.com/competitions/big-data-derby-2022/overview](Link):
 - 2.000 races
 - 3 racing tracks in the US (AQU = Aqueduct, BEL = Belmont , SAR = Saratoga)
