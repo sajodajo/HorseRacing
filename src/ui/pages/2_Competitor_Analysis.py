@@ -4,7 +4,11 @@ import pathlib
 import plotly.graph_objects as go
 import pandas as pd
 
-st.set_page_config(page_title="Competitor Analysis", layout="wide")
+st.set_page_config(
+    page_title="Competitor Analysis",
+    page_icon='src/assets/LogoSmall.png',
+    layout = 'wide'
+)
 
 col1, col2, col3,col4, col5  = st.columns([1,1, 2,1, 1])
 with col3:

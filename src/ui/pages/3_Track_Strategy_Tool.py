@@ -12,9 +12,11 @@ from src.utils.win_classifier import winClassifier
 from src.utils.win_classifier import strategyGuide
 from src.utils.win_classifier import strategy_block
 
+
 st.set_page_config(
     page_title="Track Strategy Tool",
-    layout="wide",
+    page_icon='src/assets/LogoSmall.png',
+    layout = 'wide'
 )
 
 

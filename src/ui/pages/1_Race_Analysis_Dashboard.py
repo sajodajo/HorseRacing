@@ -13,7 +13,8 @@ warnings.filterwarnings("ignore")
 
 st.set_page_config(
     page_title="Race Analysis Dashboard",
-    layout="wide",
+    page_icon='src/assets/LogoSmall.png',
+    layout = 'wide'
 )
 
 col1, col2, col3,col4, col5  = st.columns([1,1, 2,1, 1])

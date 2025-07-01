@@ -4,14 +4,9 @@ import pathlib
 import plotly.graph_objects as go
 import pandas as pd
 
-
-
-
-import streamlit as st
-
 st.set_page_config(
     page_title="About the Team",
-    page_icon='Media/logoSmall.png',
+    page_icon='src/assets/LogoSmall.png',
     layout = 'wide'
 )
 

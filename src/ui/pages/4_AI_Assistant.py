@@ -27,9 +27,10 @@ from src.utils.plotting_tool import plotly_graph_tool
 
 
 st.set_page_config(
-    page_title="Chat with your Data", 
-    page_icon=":horse_racing:",
-    layout="wide")
+    page_title="Chat with your Data",
+    page_icon='src/assets/LogoSmall.png',
+    layout = 'wide'
+)
 
 col1, col2, col3,col4, col5  = st.columns([1,1, 2,1, 1])
 with col3:
