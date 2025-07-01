@@ -19,6 +19,19 @@ st.set_page_config(
     layout = 'wide'
 )
 
+# Hide the streamlit upper-right chrome
+st.html(
+    """
+    <style>
+    [data-testid="stStatusWidget"] {
+            visibility: hidden;
+            height: 0%;
+            position: fixed;
+        }
+    </style>
+    """,
+)
+
 
 ## PAGE VISUALS ##
 col1, col2, col3,col4, col5  = st.columns([1,1, 2,1, 1])

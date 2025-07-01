@@ -3,7 +3,12 @@ import polars as pl
 import pathlib
 import sys
 
-st.set_page_config(page_title="Home", layout="wide")
+st.set_page_config(
+    page_title="FinalFurlong: Home",
+    page_icon='src/assets/LogoSmall.png',
+    layout = 'wide'
+)
+
 
 # Add project root to Python path
 project_root = pathlib.Path(__file__).parent.parent.parent
@@ -12,12 +17,10 @@ sys.path.insert(0, str(project_root))
 from src.utils.track_statistics import calculate_track_summary_stats_landingpage
 
 
-## PAGE VISUALS ##
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
+col1, col2, col3,col4, col5  = st.columns([1,1, 0.5,1, 1])
+with col3:
     st.image('src/assets/NYRAlogo.png')
 
-# Hide the streamlit upper-right chrome
 st.html(
     """
     <style>
@@ -31,8 +34,91 @@ st.html(
 )
 
 
-st.title("Welcome to the Horse Racing Strategy App")   
-st.caption("MBD - Sports Analytics | By: Vandad Vafai, Joaquin Miño, Marius Gnoth, Sam Jones, Maine Isasi")
+st.markdown("""
+    <div style="text-align: center;">
+        <h1 style="color: #da113d; font-size: 80px; margin-top: -30px; margin-bottom: -20px;">FinalFurlong</h1>
+        <h2 style="font-size: 40px; color: #0c1c44; margin-top: 0px; margin-bottom: -10px;">The AI-Powered Horse Racing Strategy App</h2>
+        <h3 style="font-size: 20px; color: grey; margin-top: 0px;">by Vandad Vafai, Joaquin Miño, Marius Gnoth, Sam Jones & Maine Isasi</h3>
+    </div>
+""", unsafe_allow_html=True)
+
+
+st.markdown("""
+    <div style="
+        margin-top: 40px;
+        margin-bottom: 40px;
+        color: grey;
+        font-size: 28px;
+        max-width: 1700px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+        line-height: 1.6;
+    ">
+        FinalFurlong is a multi-tool application designed to enhance the horse racing experience for fans, analysts, and professionals alike.
+        It combines advanced data analytics, AI-driven insights, and interactive visualizations to provide a comprehensive platform for understanding
+        and strategizing in the world of horse racing. The app is divided into four main tools, each tailored to specific aspects of the sport:
+    </div>
+""", unsafe_allow_html=True)
+
+
+col1, col2, col3, col4 = st.columns(4, border=True)
+
+with col1:
+    st.markdown("""
+        <div style="text-align: center;">
+            <h3 style="color: #da113d;">🏇 Race Analysis Dashboard</h3>
+            <p style="text-align: center; font-size: 20px;">
+                Explore past races in a dynamic, interactive format. The Race Analysis Dashboard brings archived data to life, 
+                allowing users to track each horse’s movement, pace, and positioning throughout the race. 
+                It’s designed to help identify patterns in performance, understand race dynamics, and reveal how critical decisions 
+                impacted outcomes — all in a clear, visual context.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+        <div style="text-align: center;">
+            <h3 style="color: #da113d;">🏁 Competitor Analysis Tool</h3>
+            <p style="text-align: center; font-size: 20px;">
+                Gain a competitive edge with detailed profiles of rival horses, jockeys, and trainers. 
+                The Competitor Analysis Tool surfaces key insights like historical performance trends, 
+                preferred track conditions, typical running styles, and head-to-head matchups. 
+                Whether for strategy planning or betting insight, this tool helps you know your competition inside and out.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+        <div style="text-align: center;">
+            <h3 style="color: #da113d;">🗺️ Track Strategy Tool</h3>
+            <p style="text-align: center; font-size: 20px;">
+                Every track has its own quirks — and this tool decodes them. 
+                The Track Strategy Tool analyzes historical outcomes, gate biases, course layouts, and surface types 
+                to deliver tailored strategic recommendations. It’s built to help jockeys, trainers, and analysts 
+                optimize tactics for specific tracks under specific conditions.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    st.markdown("""
+        <div style="text-align: center;">
+            <h3 style="color: #da113d;">🔮 AI Assistant</h3>
+            <p style="text-align: center; font-size: 20px;">
+                Let the AI do the heavy lifting. This intelligent assistant integrates data from past races, 
+                track conditions, competitor stats, and horse profiles to offer real-time strategic suggestions. 
+                Whether you’re deciding on race pace, positioning, or tactical adjustments, 
+                the AI Assistant provides actionable insights — fast, adaptive, and context-aware.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+
+
+
 
 
 @st.cache_data
@@ -45,7 +131,9 @@ def load_preprocessed_df():
 df = load_preprocessed_df().collect()
 
 # one column per track with some key statistics
-st.markdown("### Available Tracks and Race Records")
+st.markdown("""
+    <h3 style="color: #da113d;">FinalFurlong Data Overview</h3>
+""", unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3, border=True)
 
