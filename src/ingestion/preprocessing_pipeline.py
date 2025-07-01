@@ -65,8 +65,6 @@ def load_data(main_file_path, horse_global_ids, horse_names):
     # Filtering
     ##########################################
 
-    #TODO: FILTER OUT EDGE CASES, FOCUS ON RACE TYPES, NULLS etc.
-
     # filter out all hurdle races (course_type M)
     df = df.filter(pl.col("course_type") != "M")
 
@@ -276,7 +274,6 @@ def load_data(main_file_path, horse_global_ids, horse_names):
             ])
         )
         
-        # 6. Report results
         final_rows = df.shape[0]
         removed_percentage = (initial_rows - final_rows) / initial_rows * 100
         
@@ -372,8 +369,6 @@ def load_data(main_file_path, horse_global_ids, horse_names):
     df = df.with_columns([
         (pl.col("cumulative_distance_m") - pl.col("run_up_distance_m")).alias("cum_race_distance_m")
     ])
-
-    #TODO: VALIDATE CUMULATIVE DISTANCE AGAINST DISTANCE_ID_M
 
     # max race cumulative distance per race
     df = df.with_columns([
@@ -490,8 +485,6 @@ def load_data(main_file_path, horse_global_ids, horse_names):
     # Wrapping up
     ##########################################
 
-    # TODO: Dropping columns that are not needed anymore
-
     print(f"Final shape of {df.shape[0]} rows and {df.shape[1]} columns")
 
     return df
@@ -595,8 +588,6 @@ def parquet_to_sqlite(df, db_path):
         conn.close()
 
 
-# TEST
-
 if __name__ == "__main__":
     df = load_data(main_file_path, horse_global_ids, horse_names)
 
@@ -611,5 +602,5 @@ if __name__ == "__main__":
     store_grouped_df_csv(df)
     
     # save as sqlite database for LLM agents (comment if not needed - takes extra time)
-    # sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
-    # parquet_to_sqlite(df, sqlite_db_path)
+    sqlite_db_path = os.path.join(processed_data_dir, "horse_racing_data.db")
+    parquet_to_sqlite(df, sqlite_db_path)

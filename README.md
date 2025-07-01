@@ -2,20 +2,17 @@
 
 **Race Strategy Profiling and Performance Feature Engineering**
 
-### Features
-
-- Database explorer 
-- Race preparation and competitior analysis
-- Race strategy 
-
-
 ## Data Sources
 
 ### Main dataset  Column Descriptions
 
-- `nyra_2019_complete` [https://www.kaggle.com/competitions/big-data-derby-2022/overview](Link):`
+### Main dataset Column Descriptions
+
+- `nyra_2019_complete` [https://www.kaggle.com/competitions/big-data-derby-2022/overview](Link):
 - 2.000 races
 - 3 racing tracks in the US (AQU = Aqueduct, BEL = Belmont , SAR = Saratoga)
+
+#### Original Raw Columns
 
 | Column               | Description |
 |----------------------|-------------|
@@ -33,10 +30,59 @@
 | `race_type`          | Classification of the race. (e.g., STK - Stakes, CLM - Claiming, MSW - Maiden Special Weight, etc.) |
 | `post_time`          | Time the race began, in HHMM format (e.g., 01220 = 12:20). |
 | `weight_carried`     | Weight carried by the horse (in pounds). |
-| `purse`              | Purse in US dollars of the race passed as an money with two decimal places. |
+| `purse`              | Purse in US dollars of the race passed as money with two decimal places. |
 | `jockey`             | Name of the jockey (up to 50 characters). |
 | `odds`               | Odds to win multiplied by 100 (e.g., 1280 = 12.8-1). |
 | `position_at_finish` | Finishing position of the horse in the race (integer). |
+
+#### Engineered Features
+
+| Column                    | Description |
+|---------------------------|-------------|
+| **Distance & Scale Conversions** |             |
+| `distance_id_m`           | Race distance converted from furlongs to meters (distance_id/100 * 201.168). |
+| `run_up_distance_m`       | Run-up distance converted from feet to meters (run_up_distance / 3.28084). |
+| **Primary Keys & Identifiers** |             |
+| `horse_pk`                | Unique horse identifier per race: "{track_id}_{race_date}_{race_number}_{program_number}". |
+| `rid`                     | Race identifier: "{track_id}_{race_date}_{race_number}". |
+| `horse_id`                | Global unique horse identifier (joined from supplementary data). |
+| `horse_name`              | Name of the horse (joined from supplementary data). |
+| **Course Type Mapping**   |             |
+| `course_type` (processed) | Simplified course types: "Turf" (T, I, O) or "Dirt" (D). Hurdle races (M) are filtered out. |
+| **Betting & Performance** |             |
+| `odds_to_one`             | Odds converted to decimal format (odds / 100). |
+| `implied_win_probability` | Implied win probability: 1 / (odds_to_one + 1). |
+| `win`                     | Binary flag: 1 if horse won (position_at_finish == 1), 0 otherwise. |
+| **Time & Distance Calculations** |             |
+| `time_seconds`            | Time in seconds (trakus_index * 0.25). |
+| `distance_m`              | Distance between consecutive GPS points using Haversine formula (meters). |
+| `cumulative_distance_m`   | Cumulative distance traveled by horse from race start (meters). |
+| `cum_race_distance_m`     | Race distance corrected for run-up distance (cumulative_distance_m - run_up_distance_m). |
+| `race_max_distance_m`     | Maximum cumulative distance for the entire race. |
+| **Speed Calculations**    |             |
+| `speed_kmh`               | Instantaneous speed in km/h calculated from GPS coordinates and time. |
+| **Race Position Tracking** |             |
+| `position_rank`           | Current position rank based on race progress (cum_race_distance_m) at each trakus_index. |
+| **Race Progress Analysis** |             |
+| `pctComplete`             | Percentage of race completed (cumulative_distance_m / race_max_distance_m). |
+| `Segment`                 | Race segment: Q1 (<25%), Q2 (25-50%), Q3 (50-75%), Q4 (75-100%). |
+| **Segment-Based Performance Metrics** |             |
+| `speed_Q1`                | Average speed during first quarter of race (km/h). |
+| `speed_Q2`                | Average speed during second quarter of race (km/h). |
+| `speed_Q3`                | Average speed during third quarter of race (km/h). |
+| `speed_Q4`                | Average speed during final quarter of race (km/h). |
+| `pos_Q1`                  | Median position during first quarter of race. |
+| `pos_Q2`                  | Median position during second quarter of race. |
+| `pos_Q3`                  | Median position during third quarter of race. |
+| `pos_Q4`                  | Median position during final quarter of race. |
+
+#### Data Processing Notes
+
+- **Finish Line Truncation**: GPS tracking data is truncated at the exact point each horse crosses the finish line to ensure accurate speed and tactical analysis.
+- **Hurdle Race Filtering**: All hurdle races (course_type = "M") are removed from the dataset.
+- **Missing Data Handling**: Horses without supplementary ID/name data are retained but flagged in processing logs.
+- **Speed Calculation**: Uses Haversine formula for accurate distance calculation between GPS coordinates.
+- **Position Ranking**: Dense ranking ensures horses at identical race progress receive the same position rank.
 
 
 ### Supplemenatry datasets
@@ -123,7 +169,7 @@ Run the script to clean and preprocess the initial dataset:
 uv run src/ingestion/preprocessing_pipeline.py
 ```
 
-A `.parquet` and `.db` will be saved under `data/processed`.
+A `.parquet` and `.db` file will be saved under `data/processed`.
 
 ### Run Streamlit App
 
@@ -133,6 +179,7 @@ To run the Streamlit app, run the following command from the root:
 uv run streamlit run src/ui/Home.py
 ```
 
+### Contributing
 To add new dependencies just run:
 
 ```bash
@@ -142,10 +189,16 @@ uv add <library-name>
 uv remove <library-name>
 ```
 
+To run any script use:
+
+```
+uv run <script-name>.py
+```
+
 
 ## Contributors
+- Sam Jones
+- Marius Gnoth
 - Vandad Vafai
 - Joaquin Miño
-- Marius Gnoth
-- Sam Jones
 - Maine Isasi

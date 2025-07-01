@@ -12,14 +12,6 @@ sys.path.insert(0, str(project_root))
 from src.utils.track_statistics import calculate_track_summary_stats_landingpage
 
 
-# Load the logo
-# logo_path = "src/assets/logo_green.jpg"
-# st.logo(
-#     logo_path,
-#     size="large",
-#     icon_image=logo_path,
-# )
-
 ## PAGE VISUALS ##
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
@@ -40,7 +32,7 @@ st.html(
 
 
 st.title("Welcome to the Horse Racing Strategy App")   
-st.caption("MBD - Sports Analytics | Vandad Vafai, Joaquin Miño, Marius Gnoth, Sam Jones, Maine Isasi")
+st.caption("MBD - Sports Analytics | By: Vandad Vafai, Joaquin Miño, Marius Gnoth, Sam Jones, Maine Isasi")
 
 
 @st.cache_data

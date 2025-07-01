@@ -13,14 +13,37 @@ with col2:
 @st.cache_data
 def load_competitor_data():
     parquet_path = pathlib.Path.cwd() / "data" / "processed" / "df_clean.parquet"
-    df = pl.scan_parquet(str(parquet_path)).collect()
-    return df
+    
+    required_columns = [
+        "track_id",
+        "horse_name", 
+        "jockey",
+        "race_number",
+        "position_at_finish",
+        "race_date" 
+    ]
+    
+    return pl.scan_parquet(str(parquet_path)).select(required_columns).collect()
 
+@st.cache_data 
+def get_filter_options():
+    """Pre-compute filter options to avoid repeated calculations"""
+    df = load_competitor_data()
+    
+    track_ids = df.select("track_id").unique().sort("track_id").to_series().to_list()
+    horses = df.select("horse_name").unique().sort("horse_name").to_series().to_list()
+    
+    return {
+        "track_ids": track_ids,
+        "horses": horses
+    }
+
+filter_options = get_filter_options()
 df = load_competitor_data()
 
-track_ids = df.select("track_id").unique().sort("track_id").to_series().to_list()
+# Define track mapping
 track_names_map = {"SAR": "Saratoga Race Course", "BEL": "Belmont Park", "AQU": "Aqueduct Racetrack"}
-track_options = [track_names_map.get(t, t) for t in track_ids]
+track_options = [track_names_map.get(t, t) for t in filter_options["track_ids"]]
 track_id_map = {v: k for k, v in track_names_map.items()}
 
 st.title("Competitor Analysis")
