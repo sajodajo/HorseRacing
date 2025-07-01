@@ -98,12 +98,12 @@ def strategy_block(segment, pos_text, speed_text,segment_colors):
     header_color = rgb_str(color_rgb)
 
     st.markdown(f"""
-        <div style="background-color: #343332;
+        <div style="background-color: #fbfbfb;
                     padding: 0.8rem 1rem;
                     border-radius: 10px;
                     margin-bottom: 1rem;
                     border: 1px solid #ddd;
-                    color: #ffffff;">
+                    color: #180054;">
             <h3 style="color:{header_color}; margin: 0; padding: 0; line-height: 1.3;">Strategy {segment}</h3>
             <div style="display: flex; justify-content: space-between; margin-top: 0.3rem;">
                 <div style="flex: 1;">

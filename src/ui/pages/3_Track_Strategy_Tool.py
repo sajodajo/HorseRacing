@@ -24,10 +24,10 @@ with col2:
     st.image('src/assets/NYRAlogo.png')
 
 segment_colors = {
-    "Q1": [255, 0, 0],      # Red
-    "Q2": [255, 165, 0],    # Orange
-    "Q3": [0, 128, 0],      # Green
-    "Q4": [0, 0, 255]       # Blue
+    "Q1": [12, 28, 68],      # Red
+    "Q2": [81, 24, 65],    # Orange
+    "Q3": [149, 21, 62],      # Green
+    "Q4": [218, 17, 59]       # Blue
 }
 
 
@@ -126,9 +126,19 @@ with col2:
         pitch=0
     )
 
+    # Insert custom CSS using st.markdown
+    st.markdown("""
+        <style>
+            .stDeckGlJsonChart {
+                border-radius: 15px;
+                overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
     st.pydeck_chart(pdk.Deck(
-        map_style='mapbox://styles/mapbox/dark-v9',
+        map_style='mapbox://styles/mapbox/outdoors-v11',
         initial_view_state=view_state,
         layers=[layer],
         tooltip={"text": "Segment: {Segment}"}
