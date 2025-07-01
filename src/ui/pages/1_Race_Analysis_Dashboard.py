@@ -45,6 +45,7 @@ def load_preprocessed_df():
     required_columns = [
         # Filtering columns
         "track_id",
+        "distance_id",
         "race_date", 
         "course_type",
         "rid",
@@ -85,14 +86,15 @@ selected_distance = st.sidebar.selectbox(
     "Select Distance",
     options=distance_options
 )
+df_distance = df_track.filter(pl.col("distance_id") == selected_distance)
 
 # Date selection
-date_options = distance_options.select("race_date").drop_nulls().unique().to_series().sort().to_list()
+date_options = df_distance.select("race_date").drop_nulls().unique().to_series().sort().to_list()
 selected_date = st.sidebar.selectbox(
     "Select Date",
     options=date_options
 )
-df_date = distance_options.filter(pl.col("race_date") == selected_date)
+df_date = df_distance.filter(pl.col("race_date") == selected_date)
 
 # Course type selection
 course_type_options = df_date.select("course_type").drop_nulls().unique().to_series().sort().to_list()
