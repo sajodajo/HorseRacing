@@ -16,8 +16,8 @@ st.set_page_config(
     layout="wide",
 )
 
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
+col1, col2, col3,col4, col5  = st.columns([1,1, 2,1, 1])
+with col3:
     st.image('src/assets/NYRAlogo.png')
 
 st.markdown("# Race Analysis Dashboard")
